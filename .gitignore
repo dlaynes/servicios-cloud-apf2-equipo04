@@ -1,0 +1,24 @@
+# Dependencias y artefactos de build
+node_modules/
+target/
+dist/
+build/
+.m2/
+*.log
+app.pid
+
+# Secretos: nunca versionar
+.env
+.env.local
+.env.*.local
+*.pem
+*.key
+id_rsa
+id_ed25519
+
+# Sistema operativo / editores
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+*.swp

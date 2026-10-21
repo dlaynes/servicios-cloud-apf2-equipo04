@@ -1,0 +1,39 @@
+# =====================================================================
+# backend-enao-ti  -  API REST del modulo ENAO (Spring Boot 3.3.0)
+#
+# Construccion multi-stage: la imagen final no contiene ni el JDK ni
+# el codigo fuente, solo el JAR ejecutable y un usuario sin privilegios.
+# =====================================================================
+
+# ---------- Stage 1: compilacion ----------
+FROM maven:3.9.9-eclipse-temurin-21 AS build
+WORKDIR /build
+
+# Copiar solo el descriptor primero: aprovecha la cache de Docker
+# cuando cambia el codigo fuente pero no el pom.xml.
+COPY app/backend-enao-ti/pom.xml .
+RUN mvn -B -q dependency:go-offline
+
+COPY app/backend-enao-ti/src ./src
+RUN mvn -B -q clean package -DskipTests
+
+# ---------- Stage 2: runtime ----------
+FROM eclipse-temurin:21-jre-alpine AS runtime
+
+# Usuario no-root: la aplicacion no corre como root dentro del contenedor.
+RUN addgroup -S aspefo && adduser -S -G aspefo -u 10001 aspefo
+
+WORKDIR /app
+COPY --from=build --chown=aspefo:aspefo /build/target/*.jar app.jar
+
+USER aspefo
+EXPOSE 8080
+
+# El healthcheck consulta /api/health, un endpoint publico que confirma
+# que la aplicacion esta viva y que alcanza la base de datos.
+HEALTHCHECK --interval=15s --timeout=5s --start-period=60s --retries=5 \
+  CMD wget -q --spider http://localhost:8080/api/health || exit 1
+
+ENV JAVA_OPTS="-XX:MaxRAMPercentage=75 -XX:+UseSerialGC"
+
+ENTRYPOINT ["sh", "-c", "exec java $JAVA_OPTS -jar /app/app.jar"]

@@ -1,0 +1,21 @@
+# Normalizacion de finales de linea: se versiona siempre en LF para que
+# los diffs entre maquinas no mezclen CRLF y LF.
+* text=auto eol=lf
+
+# Los scripts de shell deben conservar LF para ejecutarse en Linux.
+*.sh text eol=lf
+*.py text eol=lf
+*.yaml text eol=lf
+*.yml text eol=lf
+*.tf text eol=lf
+*.conf text eol=lf
+Dockerfile text eol=lf
+mvnw text eol=lf
+*.cmd text eol=crlf
+
+# Documentos y binarios: no se normalizan.
+*.docx binary
+*.pdf binary
+*.png binary
+*.jpg binary
+*.jar binary

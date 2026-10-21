@@ -1,0 +1,154 @@
+# =====================================================================
+# APF2 - Solucion ASPEFO: portal institucional + sistema ENAO
+# Ejecucion multi-contenedor con red segmentada.
+#
+# Segmentacion de red (equivalente a las subredes de una VPC):
+#   apf2_public   -> borde: solo expone el frontend (80/tcp)
+#   apf2_private  -> datos y aplicacion: sin salida a Internet
+#
+# El backend y la base de datos solo viven en la red privada.
+# El frontend es el unico servicio con puerto publicado en el host y
+# ademas actua como proxy inverso hacia el backend, de modo que el
+# navegador usa un unico origen y no se requiere CORS.
+#
+# Uso:
+#   cp config/ejemplos.env .env      # y complete los valores
+#   docker compose -f docker/compose.yaml --env-file .env build
+#   docker compose -f docker/compose.yaml --env-file .env up -d
+# =====================================================================
+
+name: apf2-aspefo
+
+# -------------------------- Politica de logs --------------------------
+# Limita el tamano de los logs para no agotar el disco del host.
+# Se aplica a todos los servicios mediante el alias *default-logging.
+x-logging: &default-logging
+  driver: json-file
+  options:
+    max-size: "10m"
+    max-file: "3"
+
+# ------------------------------- Redes -------------------------------
+networks:
+  # Red publica: frontera de la solucion. Solo la une el frontend.
+  apf2_public:
+    name: apf2_public
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.28.10.0/24
+
+  # Red privada: aplicacion y datos. Sin acceso a Internet.
+  apf2_private:
+    name: apf2_private
+    driver: bridge
+    internal: true
+    ipam:
+      config:
+        - subnet: 172.28.20.0/24
+
+# ------------------------------ Volumenes ------------------------------
+volumes:
+  # Persistencia de la base de datos: sobrevive a la reinicializacion
+  # de los contenedores y a 'docker compose down' (sin -v).
+  db_data:
+    name: apf2_db_data
+
+services:
+
+  # -------------------------------------------------------------------
+  # Base de datos - MySQL 8 (red privada, sin puertos publicados)
+  # -------------------------------------------------------------------
+  db:
+    image: mysql:8.0
+    container_name: apf2-db
+    restart: unless-stopped
+    logging: *default-logging
+    environment:
+      MYSQL_DATABASE: enao
+      MYSQL_USER: enao
+      # Las contrasenas llegan por variable de entorno desde el archivo .env
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD:?MYSQL_PASSWORD es obligatorio}
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:?MYSQL_ROOT_PASSWORD es obligatorio}
+    volumes:
+      - db_data:/var/lib/mysql
+    networks:
+      - apf2_private
+    healthcheck:
+      # '$$' evita que Compose sustituya la variable: MySQL la resuelve
+      test:
+        - CMD-SHELL
+        - mysqladmin ping -h 127.0.0.1 -u root -p"$$MYSQL_ROOT_PASSWORD" --silent
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 40s
+    # Sin 'ports:': la base de datos no es alcanzable desde el host.
+
+  # -------------------------------------------------------------------
+  # Backend ENAO - Spring Boot 3.3.0 (red privada)
+  # -------------------------------------------------------------------
+  backend:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile.backend
+    image: apf2/backend-enao:2.0-apf2
+    container_name: apf2-backend
+    restart: unless-stopped
+    logging: *default-logging
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      # Perfil prod: usa MySQL y no expone la consola H2.
+      SPRING_PROFILES_ACTIVE: prod
+      SPRING_DATASOURCE_URL: jdbc:mysql://db:3306/enao?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
+      SPRING_DATASOURCE_USERNAME: enao
+      SPRING_DATASOURCE_PASSWORD: ${MYSQL_PASSWORD:?MYSQL_PASSWORD es obligatorio}
+      SPRING_JPA_HIBERNATE_DDL_AUTO: update
+      ENAO_JWT_SECRET: ${JWT_SECRET:?JWT_SECRET es obligatorio}
+      ENAO_JWT_EXPIRATION_MS: "86400000"
+      # El navegador usa un unico origen (proxy inverso), por lo que CORS
+      # queda como red de seguridad para accesos directos a la API.
+      ENAO_CORS_ALLOWED_ORIGINS: ${CORS_ALLOWED_ORIGINS:-http://localhost:8080}
+      # Sin datos de ejemplo en el despliegue.
+      ENAO_SEED_ENABLED: "false"
+    networks:
+      - apf2_private
+    healthcheck:
+      # /api/health es publico y comprueba ademas la conexion con la BD.
+      test: ["CMD-SHELL", "wget -q --spider http://localhost:8080/api/health || exit 1"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 60s
+    # Sin 'ports:': el backend no se publica directamente al host.
+    # Solo el frontend (proxy inverso) puede alcanzarlo.
+
+  # -------------------------------------------------------------------
+  # Frontend - React + Nginx (red publica, unico puerto publicado)
+  # -------------------------------------------------------------------
+  frontend:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile.frontend
+      args:
+        VITE_API_URL: /api
+    image: apf2/aspefo-demo:2.0-apf2
+    container_name: apf2-frontend
+    restart: unless-stopped
+    logging: *default-logging
+    depends_on:
+      backend:
+        condition: service_healthy
+    ports:
+      - "${FRONTEND_PORT:-8080}:80"
+    networks:
+      - apf2_public
+      - apf2_private
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q --spider http://localhost/ || exit 1"]
+      interval: 15s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
