@@ -20,63 +20,49 @@ y **Sistema de Inscripcion al ENAO**.
 ```text
 servicios-cloud-apf2-equipo04/
 |-- README.md                 Este documento
-|-- .gitmodules               Declaracion de los submodulos
 |-- app/                      Codigo de la solucion
 |   |-- aspefo-demo/          Frontend React + Vite (portal institucional y ENAO)
 |   `-- backend-enao-ti/      API REST Spring Boot 3.3.0 (modulo ENAO)
 |-- docker/
 |   |-- Dockerfile.backend    Build multi-stage del backend
 |   |-- Dockerfile.frontend   Build multi-stage del frontend
-|   |-- nginx-frontend.conf   SPA + proxy inverso hacia la API
-|   `-- compose.yaml          Orquestacion de los 3 servicios
+|   |-- nginx-frontend.conf   SPA + proxy inverso hacia la API y la mesa de ayuda
+|   |-- compose.yaml          Orquestacion del portal, el backend y la base de datos
+|   `-- compose-helpdesk.yaml Orquestacion de la mesa de ayuda (RF-09, FreeScout)
 |-- infra/
 |   |-- cloud/                Manifiestos Terraform de la VPC de destino
 |   |   |-- vpc.tf
 |   |   `-- security-groups.tf
 |   `-- network/README.md     Equivalencia Docker <-> AWS
 |-- config/ejemplos.env       Variables de ejemplo, sin secretos
-|-- docs/                     Documentacion tecnica y evidencias
+|-- docs/                     Documentacion tecnica, evidencias y guias
+|   `-- sql/                  Esquema e indices de los RF pendientes del APF3
 |-- scripts/                  Utilidades de verificacion
 `-- evidencias/               Capturas y salidas de consola
 ```
 
-## 2. Submodulos: por que el codigo esta en `app/`
+## 2. Codigo de la aplicacion en `app/`
 
-El frontend y el backend ya existian como repositorios independientes en
-GitHub y **no se han copiado ni reescrito**: se incorporan como submodulos
-Git. Esto conserva su historial completo, sus remotos y la posibilidad de
-seguir-css actualizando cada componente por separado.
+El frontend (`app/aspefo-demo`) y el backend (`app/backend-enao-ti`) forman
+**parte de este repositorio**: no hay submodulos, de modo que la revision del
+APF3 puede hacerse clonando un unico repositorio. Los origenes con sus
+respectivos historiales son:
 
-| Ruta | Repositorio de origen | Submodulo |
-|---|---|---|
-| `app/aspefo-demo` | https://github.com/dlaynes/aspefo-demo | `app/aspefo-demo` |
-| `app/backend-enao-ti` | https://github.com/dlaynes/backend-enao-ti | `app/backend-enao-ti` |
+| Ruta | Repositorio de origen |
+|---|---|
+| `app/aspefo-demo` | https://github.com/dlaynes/aspefo-demo |
+| `app/backend-enao-ti` | https://github.com/dlaynes/backend-enao-ti |
 
-Clonar **con** los submodulos:
-
-```bash
-git clone --recurse-submodules https://github.com/dlaynes/servicios-cloud-apf2-equipo04.git
-```
-
-Si ya se clono sin submodulos:
+Clonar y trabajar sobre el repositorio:
 
 ```bash
+git clone https://github.com/dlaynes/servicios-cloud-apf2-equipo04.git
 cd servicios-cloud-apf2-equipo04
-git submodule update --init --recursive
 ```
 
-Verificar que quedaron correctamente:
-
-```bash
-git submodule status
-# 416e4c7... app/aspefo-demo
-# 52d0a52... app/backend-enao-ti
-```
-
-En el repositorio padre cada submodulo se registra con modo `160000`
-(entrada de directorio enlazada a un commit concreto), no como una copia
-de los archivos. Por eso `git status` del repositorio padre no muestra
-cambios dentro de `app/`: esos cambios se versionan en su propio repositorio.
+Con este esquema `git status` del repositorio muestra directamente los
+cambios dentro de `app/`, lo mismo que los cambios de documentacion, sin
+necesidad de revisar repositorios separados.
 
 ## 3. Requisitos
 
@@ -84,7 +70,7 @@ cambios dentro de `app/`: esos cambios se versionan en su propio repositorio.
 |---|---|---|
 | Docker Engine | 24 o superior | Ejecucion de los contenedores |
 | Docker Compose | v2 o superior (incluido en Docker Desktop) | Orquestacion multi-contenedor |
-| Git | 2.30 o superior | Clonado con submodulos |
+| Git | 2.30 o superior | Clonado del repositorio |
 | Java | 21 (JDK) | Solo para ejecutar el backend fuera de Docker |
 | Maven | 3.9 o superior | Solo para compilar el backend fuera de Docker |
 | Node.js | 22 (LTS) | Solo para el desarrollo del frontend |
@@ -277,3 +263,7 @@ verificable a la fecha de entrega:
 | `docs/plan-apf3.md` | Continuidad hacia orquestacion, escalabilidad y monitoreo. |
 | `docs/evidencias/` | Evidencias E-01 a E-06. |
 | `infra/network/README.md` | Equivalencia entre Docker y AWS. |
+| `docs/guia-verificacion-evidencias.md` | Guia general ordenada para verificar E-01 a E-06. |
+| `docs/floci-cli.md` | Guia opcional del emulador AWS (Floci) para pruebas locales. |
+| `docs/plan-rf-pendientes.md` | Detalle tecnico de RF-03, RF-04, RF-08 y RF-09. |
+| `docs/sql/schema-complementario.sql` | Esquema e indices de los RF pendientes del APF3. |

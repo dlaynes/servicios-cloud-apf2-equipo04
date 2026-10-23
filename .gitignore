@@ -22,3 +22,6 @@ Thumbs.db
 .vscode/
 .idea/
 *.swp
+
+# Artefactos del build de la aplicacion (app/ pasa a ser parte del repo)
+**/.mvn/wrapper/maven-wrapper.jar

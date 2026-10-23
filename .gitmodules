@@ -1,6 +1,0 @@
-[submodule "app/aspefo-demo"]
-	path = app/aspefo-demo
-	url = https://github.com/dlaynes/aspefo-demo.git
-[submodule "app/backend-enao-ti"]
-	path = app/backend-enao-ti
-	url = https://github.com/dlaynes/backend-enao-ti.git
