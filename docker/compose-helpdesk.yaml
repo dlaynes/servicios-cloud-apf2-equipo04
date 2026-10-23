@@ -109,8 +109,9 @@ services:
     networks:
       - apf2_private
     healthcheck:
-      # FreeScout expone la aplicacion en el puerto 80 dentro del contenedor.
-      test: ["CMD-SHELL", "wget -q --spider --timeout=10 http://localhost/ || exit 1"]
+      # 127.0.0.1 y no localhost: el mismo criterio del frontend, para no
+      # depender de como resuelva /etc/hosts dentro del contenedor.
+      test: ["CMD-SHELL", "wget -q -O /dev/null --timeout=10 http://127.0.0.1/ || exit 1"]
       interval: 30s
       timeout: 10s
       retries: 5

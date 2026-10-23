@@ -28,9 +28,14 @@ FROM nginx:1.27-alpine AS runtime
 COPY docker/nginx-frontend.conf /etc/nginx/conf.d/default.conf
 COPY --from=build /build/dist /usr/share/nginx/html
 
+# Healthcheck con un recurso propio y 127.0.0.1: en Alpine 'localhost' puede
+# resolver a ::1 (IPv6) y el chequeo fallaria aunque nginx este sirviendo.
+# '-O /dev/null' evita depender de que BusyBox reconozca '--spider'.
+RUN echo "ok" > /usr/share/nginx/html/health.txt
+
 EXPOSE 80
 
 HEALTHCHECK --interval=15s --timeout=5s --start-period=10s --retries=3 \
-  CMD wget -q --spider http://localhost/ || exit 1
+  CMD wget -q -O /dev/null http://127.0.0.1/health.txt || exit 1
 
 CMD ["nginx", "-g", "daemon off;"]

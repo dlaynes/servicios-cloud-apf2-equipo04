@@ -195,6 +195,94 @@ se marcaria como no sano de forma permanente. Se sustituyo por
 `GET /api/health`, un endpoint publico que ademas comprueba la conexion
 con la base de datos.
 
+## Registro real del despliegue (22/10/2026)
+
+Salida de `docker compose -f docker/compose.yaml --env-file .env ps` con el
+stack levantado en la maquina del equipo:
+
+```text
+NAME           IMAGE                        COMMAND                  SERVICE   CREATED         STATUS                     PORTS
+apf2-backend   apf2/backend-enao:2.0-apf2   "sh -c 'exec java $J..."   backend   4 minutes ago   Up 4 minutes (healthy)     8080/tcp
+apf2-db        mysql:8.0                    "docker-entrypoint.s..."   db        4 minutes ago   Up 4 minutes (healthy)     3306/tcp, 33060/tcp
+apf2-frontend  apf2/aspefo-demo:2.0-apf2    "/docker-entrypoint...."   frontend  4 minutes ago   Up 2 minutes (unhealthy)   0.0.0.0:8080->80/tcp, [::]:8080->80/tcp
+```
+
+Y la salida de `bash scripts/verificar-salud.sh http://localhost:8080`:
+
+```text
+[OK]   Frontend (SPA) accesible
+[OK]   Proxy inverso /api -> backend
+[OK]   Backend y base de datos en estado UP
+[OK]   Login invalido devuelve 400 y no 500
+[OK]   MySQL no publicado en el host
+```
+
+### Falso `unhealthy` del frontend y su correccion
+
+El contenedor `apf2-frontend` aparecia `unhealthy` aunque la SPA y el proxy
+responderian bien desde el host. La causa era el healthcheck del contenedor:
+
+```yaml
+test: ["CMD-SHELL", "wget -q --spider http://localhost/ || exit 1"]
+```
+
+Dentro del contenedor `nginx:1.27-alpine`, `localhost` resolvio a `::1`
+(IPv6) mientras nginx solo escucha IPv4, con lo que el chequeo interno
+fallaba y Docker tenia que marcar el contenedor como no sano; la misma comprobacion
+hecha desde el host, que usa `0.0.0.0`, si funcionaba.
+
+Correccion aplicada:
+
+- `docker/Dockerfile.frontend` crea `health.txt` en el runtime y cambia el
+  chequeo a `http://127.0.0.1/health.txt`, con `-O /dev/null` en lugar de
+  `--spider`.
+- `docker/compose.yaml` (servicio `frontend`) queda con el mismo comando.
+
+Para que el cambio tome efecto hace falta reconstruir la imagen del
+frontend, porque la version en ejecucion todavia tiene el healthcheck
+anterior:
+
+```bash
+docker compose -f docker/compose.yaml --env-file .env build frontend
+docker compose -f docker/compose.yaml --env-file .env up -d
+```
+
+## Verificacion end-to-end de los RF
+
+`scripts/verificar-rf.sh` recorre el ciclo completo de RF-03, RF-04 y RF-08
+contra el despliegue en marcha:
+
+```bash
+bash scripts/verificar-rf.sh http://localhost:8080
+```
+
+Registra el postulante de prueba que crea, el documento que sube, la
+revision del administrador, el comprobante emitido y su anulacion, y las
+agregaciones de RF-08 (estado, periodo, sede, institucion, resultados y
+resumen). Cada paso imprime `[OK]` o `[FALLA]` con el codigo HTTP
+obtenido frente al esperado.
+
+## Bootstrap del administrador en el despliegue
+
+En el despliegue con contenedores el sembrado de datos va apagado
+(`ENAO_SEED_ENABLED=false`), de modo que sin un usuario de personal el panel
+de administrcion y los reportes de RF-08 quedarian inaccesibles, y el login
+invalido seguiria devolviendo 400 sin forma de autenticar a un administrador.
+
+`AdminBootstrap` resuelve ese caso: se ejecuta en el arranque, es idempotente
+y solo crea el usuario `admin` si (a) no existe ninguno y (b) llega la contrasena
+por variable de entorno.
+
+| Variable | Uso |
+|---|---|
+| `ADMIN_PASSWORD` | Contrasena del administrador (obligatoria para crearlo) |
+| `ADMIN_USERNAME` | Nombre de usuario, por defecto `admin` |
+| `ADMIN_BOOTSTRAP_ENABLED` | Permite apagarlo en un entorno que ya tiene usuarios |
+
+Si la contrasena no llega, el backend registra un aviso en el log al arrancar
+y el resto del despliegue queda igual; para usar la revision y los reportes
+definela en el `.env` y reconstruye el servicio `backend`.
+
 ## Archivos relacionados
 
 - `docker/compose.yaml`
