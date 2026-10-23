@@ -25,7 +25,7 @@ demuestra.
 | Justificacion de imagenes ligeras y multi-stage | R-01, R-02 | `docs/arquitectura.md` (seccion 4.4) | E-04 | Implementado |
 | **D. Repositorio y documentacion** | | | | |
 | Repositorio Git accesible y ordenado | - | `https://github.com/dlaynes/servicios-cloud-apf2-equipo04` | E-05 | Implementado |
-| Commits trazables de los integrantes | - | historial del repositorio y de los submodulos | E-05 | Implementado |
+| Commits trazables de los integrantes | - | historial del repositorio (app/ ya es parte del repo) | E-05 | Implementado |
 | README con requisitos, instalacion, configuracion, ejecucion y verificacion | - | `README.md` | E-05 | Implementado |
 | Diagrama, inventario, evidencias e informe tecnico | - | `docs/` | E-01, E-02, E-05 | Implementado |
 | Ausencia de credenciales en el repositorio | - | `.gitignore` (`.env`), `scripts/verificar-codificacion.py`, revision de `git ls-files` | E-05 | Implementado |

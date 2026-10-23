@@ -1,81 +1,90 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="860" viewBox="0 0 1280 860" font-family="Segoe UI,Arial,sans-serif">
-<rect width="1280" height="860" fill="#FFFFFF"/>
-<defs><marker id="arrow" markerWidth="10" markerHeight="8" refX="9" refY="4" orient="auto"><path d="M0,0 L10,4 L0,8 z" fill="#2C3E50"/></marker></defs>
-<text x="640" y="36" text-anchor="middle" font-size="21" font-weight="bold" fill="#2C3E50">Figura 2. Topologia de red virtual - APF2</text>
-<text x="640" y="59" text-anchor="middle" font-size="13" fill="#5D6D7E">Segmentacion en dos capas con direccionamiento explicito y reglas de minimo privilegio</text>
-<rect x="490" y="86" width="300" height="52" rx="10" fill="#F4F6F7" stroke="#2C3E50" stroke-width="2"/>
-<text x="640" y="108" text-anchor="middle" font-size="14" font-weight="bold" fill="#1B2631">Internet</text>
-<text x="640" y="126" text-anchor="middle" font-size="11" fill="#5D6D7E">origen de las peticiones</text>
-<rect x="330" y="182" width="620" height="196" rx="14" ry="14" fill="#E8F1FB" stroke="#2E86C1" stroke-width="2.5"/>
-<text x="350" y="208" font-size="14" font-weight="bold" fill="#2E86C1">red apf2_public  -  172.28.10.0/24  -  bridge</text>
-<text x="350" y="226" font-size="11" fill="#5D6D7E">con salida a Internet  |  unico servicio: apf2-frontend</text>
-<rect x="440" y="246" width="400" height="100" rx="10" ry="10" fill="#D6EAF8" stroke="#2E86C1" stroke-width="2"/>
-<text x="640.0" y="272" text-anchor="middle" font-family="Segoe UI,Arial,sans-serif" font-size="15" font-weight="bold" fill="#1B2631">apf2-frontend  (Nginx + React)</text>
-<text x="640.0" y="294" text-anchor="middle" font-family="Segoe UI,Arial,sans-serif" font-size="12" fill="#1B2631">Escucha en 80/tcp dentro del contenedor</text>
-<text x="640.0" y="313" text-anchor="middle" font-family="Segoe UI,Arial,sans-serif" font-size="12" fill="#1B2631">Publicado en el host: 8080 -&gt; 80</text>
-<text x="640.0" y="332" text-anchor="middle" font-family="Segoe UI,Arial,sans-serif" font-size="12" fill="#1B2631">Proxy inverso: /api/ -&gt; backend:8080</text>
-<rect x="330" y="430" width="620" height="240" rx="14" ry="14" fill="#E9F6EC" stroke="#1E8449" stroke-width="2.5"/>
-<text x="350" y="456" font-size="14" font-weight="bold" fill="#1E8449">red apf2_private  -  172.28.20.0/24  -  internal: true</text>
-<text x="350" y="474" font-size="11" fill="#5D6D7E">sin salida a Internet  |  servicios: apf2-backend y apf2-db</text>
-<rect x="370" y="492" width="250" height="100" rx="10" ry="10" fill="#D5F5E3" stroke="#1E8449" stroke-width="2"/>
-<text x="495.0" y="518" text-anchor="middle" font-family="Segoe UI,Arial,sans-serif" font-size="15" font-weight="bold" fill="#1B2631">apf2-backend</text>
-<text x="495.0" y="540" text-anchor="middle" font-family="Segoe UI,Arial,sans-serif" font-size="12" fill="#1B2631">Spring Boot 3.3.0 en 8080/tcp</text>
-<text x="495.0" y="559" text-anchor="middle" font-family="Segoe UI,Arial,sans-serif" font-size="12" fill="#1B2631">Sin puerto publicado</text>
-<text x="495.0" y="578" text-anchor="middle" font-family="Segoe UI,Arial,sans-serif" font-size="12" fill="#1B2631">healthcheck: /api/health</text>
-<rect x="660" y="492" width="250" height="100" rx="10" ry="10" fill="#FCF3CF" stroke="#B9770E" stroke-width="2"/>
-<text x="785.0" y="518" text-anchor="middle" font-family="Segoe UI,Arial,sans-serif" font-size="15" font-weight="bold" fill="#1B2631">apf2-db</text>
-<text x="785.0" y="540" text-anchor="middle" font-family="Segoe UI,Arial,sans-serif" font-size="12" fill="#1B2631">MySQL 8.0 en 3306/tcp</text>
-<text x="785.0" y="559" text-anchor="middle" font-family="Segoe UI,Arial,sans-serif" font-size="12" fill="#1B2631">Sin puerto publicado</text>
-<text x="785.0" y="578" text-anchor="middle" font-family="Segoe UI,Arial,sans-serif" font-size="12" fill="#1B2631">volumen apf2_db_data</text>
-<line x1="700" y1="592" x2="655" y2="592" stroke="#2C3E50" stroke-width="2.5" marker-end="url(#arrow)"/>
-<text x="677.5" y="584.0" text-anchor="middle" font-family="Segoe UI,Arial,sans-serif" font-size="12" font-weight="bold" fill="#2C3E50">3306/tcp</text>
-<rect x="45" y="182" width="230" height="150" rx="12" fill="#FFFFFF" stroke="#2C3E50" stroke-width="2"/>
-<text x="160" y="206" text-anchor="middle" font-size="14" font-weight="bold" fill="#1B2631">Host / workstation</text>
-<text x="160" y="228" text-anchor="middle" font-size="12" fill="#1E8449">Acceso permitido:</text>
-<text x="160" y="247" text-anchor="middle" font-size="12" fill="#1B2631">frontend  8080</text>
-<text x="160" y="272" text-anchor="middle" font-size="12" fill="#B03A2E">Acceso denegado:</text>
-<text x="160" y="291" text-anchor="middle" font-size="12" fill="#1B2631">backend 8080</text>
-<text x="160" y="312" text-anchor="middle" font-size="12" fill="#1B2631">MySQL 3306</text>
-<line x1="275" y1="330" x2="330" y2="330" stroke="#B03A2E" stroke-width="2.5" stroke-dasharray="6 4"/>
-<text x="302" y="322" text-anchor="middle" font-size="11" font-weight="bold" fill="#B03A2E">sin puertos</text>
-<line x1="640" y1="138" x2="640" y2="180" stroke="#2C3E50" stroke-width="2.5" marker-end="url(#arrow)"/>
-<text x="640.0" y="151.0" text-anchor="middle" font-family="Segoe UI,Arial,sans-serif" font-size="12" font-weight="bold" fill="#2C3E50">HTTP 8080</text>
-<line x1="640" y1="346" x2="640" y2="428" stroke="#2C3E50" stroke-width="2.5" marker-end="url(#arrow)"/>
-<text x="640.0" y="379.0" text-anchor="middle" font-family="Segoe UI,Arial,sans-serif" font-size="12" font-weight="bold" fill="#2C3E50">HTTP /api/  8080/tcp</text>
-<line x1="200" y1="193" x2="435" y2="258" stroke="#1E8449" stroke-width="2.5" marker-end="url(#arrow)"/>
-<text x="317.5" y="217.5" text-anchor="middle" font-family="Segoe UI,Arial,sans-serif" font-size="12" font-weight="bold" fill="#1E8449">permitido</text>
-<text x="640" y="700" text-anchor="middle" font-size="15" font-weight="bold" fill="#2C3E50">Matriz de accesos</text>
-<rect x="330" y="714" width="620" height="26" fill="#EAEDED"/>
-<text x="346" y="732" font-size="12" font-weight="bold" fill="#1B2631">Origen</text>
-<text x="520" y="732" font-size="12" font-weight="bold" fill="#1B2631">Destino</text>
-<text x="700" y="732" font-size="12" font-weight="bold" fill="#1B2631">Puerto</text>
-<text x="800" y="732" font-size="12" font-weight="bold" fill="#1B2631">Regla</text>
-<text x="346" y="757" font-size="12" fill="#1B2631">Internet</text>
-<text x="520" y="757" font-size="12" fill="#1B2631">apf2-frontend</text>
-<text x="700" y="757" font-size="12" fill="#1B2631">8080 -&gt; 80</text>
-<text x="800" y="757" font-size="12" font-weight="bold" fill="#1E8449">PERMITIDO</text>
-<rect x="330" y="764" width="620" height="24" fill="#F8F9F9"/>
-<text x="346" y="781" font-size="12" fill="#1B2631">apf2-frontend</text>
-<text x="520" y="781" font-size="12" fill="#1B2631">apf2-backend</text>
-<text x="700" y="781" font-size="12" fill="#1B2631">8080</text>
-<text x="800" y="781" font-size="12" font-weight="bold" fill="#1E8449">PERMITIDO</text>
-<text x="346" y="805" font-size="12" fill="#1B2631">apf2-backend</text>
-<text x="520" y="805" font-size="12" fill="#1B2631">apf2-db</text>
-<text x="700" y="805" font-size="12" fill="#1B2631">3306</text>
-<text x="800" y="805" font-size="12" font-weight="bold" fill="#1E8449">PERMITIDO</text>
-<rect x="330" y="812" width="620" height="24" fill="#F8F9F9"/>
-<text x="346" y="829" font-size="12" fill="#1B2631">Host</text>
-<text x="520" y="829" font-size="12" fill="#1B2631">apf2-backend</text>
-<text x="700" y="829" font-size="12" fill="#1B2631">8080</text>
-<text x="800" y="829" font-size="12" font-weight="bold" fill="#B03A2E">DENEGADO</text>
-<text x="346" y="853" font-size="12" fill="#1B2631">Host</text>
-<text x="520" y="853" font-size="12" fill="#1B2631">apf2-db</text>
-<text x="700" y="853" font-size="12" fill="#1B2631">3306</text>
-<text x="800" y="853" font-size="12" font-weight="bold" fill="#B03A2E">DENEGADO</text>
-<rect x="330" y="860" width="620" height="24" fill="#F8F9F9"/>
-<text x="346" y="877" font-size="12" fill="#1B2631">apf2-private</text>
-<text x="520" y="877" font-size="12" fill="#1B2631">Internet</text>
-<text x="700" y="877" font-size="12" fill="#1B2631">salida</text>
-<text x="800" y="877" font-size="12" font-weight="bold" fill="#B03A2E">DENEGADO</text>
-<text x="640" y="855" text-anchor="middle" font-size="11" fill="#5D6D7E">Equivalencia con AWS: subred publica 10.20.10.0/24, subred privada 10.20.20.0/24, IGW y NAT Gateway - ver infra/cloud/ (SIMULADO)</text>
+<svg id="svgRoot" xmlns="http://www.w3.org/2000/svg" width="1280" height="940" viewBox="0 0 1280 940">
+  <defs>
+    <marker id="arrow" markerWidth="10" markerHeight="8" refX="9" refY="4" orient="auto">
+      <path d="M0,0 L10,4 L0,8 z" fill="#2C3E50"/>
+    </marker>
+    <pattern id="gridPattern" patternUnits="userSpaceOnUse" width="20" height="20">
+      <path fill="none" stroke="#8888ff" stroke-width="0.6" stroke-opacity="0.35" d="M 20 0 L 0 0 0 20"/>
+    </pattern>
+  </defs>
+  <g id="artContent">
+    <rect width="1280" height="860" fill="#FFFFFF" id="rect_f91isch" data-type="rect" data-name="rect" data-transform="{&quot;tx&quot;:0,&quot;ty&quot;:0.3999694488769068,&quot;rotate&quot;:0,&quot;cx&quot;:0,&quot;cy&quot;:0,&quot;scaleX&quot;:1,&quot;scaleY&quot;:1.0930232558139534}" transform="translate(0,0.3999694488769068) translate(0,0) scale(1,1.0930232558139534) translate(0,0)"/>
+    <text x="640" y="36" text-anchor="middle" font-size="21" font-weight="bold" fill="#2C3E50" id="text_t169qg0" data-type="text" data-name="text">Figura 2. Topologia de red virtual - APF2</text>
+    <text x="640" y="59" text-anchor="middle" font-size="13" fill="#5D6D7E" id="text_b5a32dw" data-type="text" data-name="text">Segmentacion en dos capas con direccionamiento explicito y reglas de minimo privilegio</text>
+    <rect x="490" y="86" width="300" height="52" rx="10" fill="#F4F6F7" stroke="#2C3E50" stroke-width="2" id="rect_4kwt337" data-type="rect" data-name="rect"/>
+    <text x="640" y="108" text-anchor="middle" font-size="14" font-weight="bold" fill="#1B2631" id="text_b6lfq7p" data-type="text" data-name="text">Internet</text>
+    <text x="640" y="126" text-anchor="middle" font-size="11" fill="#5D6D7E" id="text_t9bbg5a" data-type="text" data-name="text">origen de las peticiones</text>
+    <rect x="330" y="182" width="620" height="196" rx="14" ry="14" fill="#E8F1FB" stroke="#2E86C1" stroke-width="2.5" id="rect_6duutma" data-type="rect" data-name="rect"/>
+    <text x="350" y="208" font-size="14" font-weight="bold" fill="#2E86C1" id="text_b9fhekf" data-type="text" data-name="text">red apf2_public  -  172.28.10.0/24  -  bridge</text>
+    <text x="350" y="226" font-size="11" fill="#5D6D7E" id="text_c590asm" data-type="text" data-name="text">con salida a Internet  |  unico servicio: apf2-frontend</text>
+    <rect x="440" y="246" width="400" height="100" rx="10" ry="10" fill="#D6EAF8" stroke="#2E86C1" stroke-width="2" id="rect_wipvr8w" data-type="rect" data-name="rect"/>
+    <text x="640.0" y="272" text-anchor="middle" font-family="Segoe UI,Arial,sans-serif" font-size="15" font-weight="bold" fill="#1B2631" id="text_a83tctp" data-type="text" data-name="text">apf2-frontend  (Nginx + React)</text>
+    <text x="640.0" y="294" text-anchor="middle" font-family="Segoe UI,Arial,sans-serif" font-size="12" fill="#1B2631" id="text_1ezygf8" data-type="text" data-name="text">Escucha en 80/tcp dentro del contenedor</text>
+    <text x="640.0" y="313" text-anchor="middle" font-family="Segoe UI,Arial,sans-serif" font-size="12" fill="#1B2631" id="text_dfpdyrc" data-type="text" data-name="text">Publicado en el host: 8080 -&gt; 80</text>
+    <text x="640.0" y="332" text-anchor="middle" font-family="Segoe UI,Arial,sans-serif" font-size="12" fill="#1B2631" id="text_s3c6mac" data-type="text" data-name="text">Proxy inverso: /api/ -&gt; backend:8080</text>
+    <rect x="330" y="430" width="620" height="240" rx="14" ry="14" fill="#E9F6EC" stroke="#1E8449" stroke-width="2.5" id="rect_03jqcif" data-type="rect" data-name="rect" data-transform="{&quot;tx&quot;:0,&quot;ty&quot;:0.1549742169411843,&quot;rotate&quot;:0,&quot;cx&quot;:0,&quot;cy&quot;:0,&quot;scaleX&quot;:1,&quot;scaleY&quot;:0.9808878450133472}" transform="translate(0,0.1549742169411843) translate(0,0) scale(1,0.9808878450133472) translate(0,0)"/>
+    <text x="350" y="456" font-size="14" font-weight="bold" fill="#1E8449" id="text_nctdvcg" data-type="text" data-name="text">red apf2_private  -  172.28.20.0/24  -  internal: true</text>
+    <text x="350" y="474" font-size="11" fill="#5D6D7E" id="text_bn1cqcp" data-type="text" data-name="text">sin salida a Internet  |  servicios: apf2-backend y apf2-db</text>
+    <rect x="370" y="492" width="250" height="100" rx="10" ry="10" fill="#D5F5E3" stroke="#1E8449" stroke-width="2" id="rect_b70owli" data-type="rect" data-name="rect"/>
+    <text x="495.0" y="518" text-anchor="middle" font-family="Segoe UI,Arial,sans-serif" font-size="15" font-weight="bold" fill="#1B2631" id="text_jupuqwh" data-type="text" data-name="text">apf2-backend</text>
+    <text x="495.0" y="540" text-anchor="middle" font-family="Segoe UI,Arial,sans-serif" font-size="12" fill="#1B2631" id="text_91funzz" data-type="text" data-name="text">Spring Boot 3.3.0 en 8080/tcp</text>
+    <text x="495.0" y="559" text-anchor="middle" font-family="Segoe UI,Arial,sans-serif" font-size="12" fill="#1B2631" id="text_lopv3ok" data-type="text" data-name="text">Sin puerto publicado</text>
+    <text x="495.0" y="578" text-anchor="middle" font-family="Segoe UI,Arial,sans-serif" font-size="12" fill="#1B2631" id="text_mdozk6a" data-type="text" data-name="text">healthcheck: /api/health</text>
+    <rect x="660" y="492" width="250" height="100" rx="10" ry="10" fill="#FCF3CF" stroke="#B9770E" stroke-width="2" id="rect_j54xung" data-type="rect" data-name="rect"/>
+    <text x="785.0" y="518" text-anchor="middle" font-family="Segoe UI,Arial,sans-serif" font-size="15" font-weight="bold" fill="#1B2631" id="text_nnxn4bv" data-type="text" data-name="text">apf2-db</text>
+    <text x="785.0" y="540" text-anchor="middle" font-family="Segoe UI,Arial,sans-serif" font-size="12" fill="#1B2631" id="text_uq0ns3y" data-type="text" data-name="text">MySQL 8.0 en 3306/tcp</text>
+    <text x="785.0" y="559" text-anchor="middle" font-family="Segoe UI,Arial,sans-serif" font-size="12" fill="#1B2631" id="text_2wxkp70" data-type="text" data-name="text">Sin puerto publicado</text>
+    <text x="785.0" y="578" text-anchor="middle" font-family="Segoe UI,Arial,sans-serif" font-size="12" fill="#1B2631" id="text_yeu9iuw" data-type="text" data-name="text">volumen apf2_db_data</text>
+    <line x1="700" y1="592" x2="655" y2="592" stroke="#2C3E50" stroke-width="2.5" marker-end="url(#arrow)" id="line_jhn8lhl" data-type="line" data-name="line" data-transform="{&quot;tx&quot;:-39,&quot;ty&quot;:-29,&quot;rotate&quot;:0,&quot;cx&quot;:0,&quot;cy&quot;:0,&quot;scaleX&quot;:1,&quot;scaleY&quot;:1}" transform="translate(-39,-29)"/>
+    <text x="677.5" y="584.0" text-anchor="middle" font-family="Segoe UI,Arial,sans-serif" font-size="12" font-weight="bold" fill="#2C3E50" id="text_4z01d8b" data-type="text" data-name="text" data-transform="{&quot;tx&quot;:-37,&quot;ty&quot;:26,&quot;rotate&quot;:0,&quot;cx&quot;:0,&quot;cy&quot;:0,&quot;scaleX&quot;:1,&quot;scaleY&quot;:1}" transform="translate(-37,26)">3306/tcp</text>
+    <rect x="45" y="182" width="230" height="150" rx="12" fill="#FFFFFF" stroke="#2C3E50" stroke-width="2" id="rect_o4fd3tk" data-type="rect" data-name="rect" data-transform="{&quot;tx&quot;:-9,&quot;ty&quot;:51,&quot;rotate&quot;:0,&quot;cx&quot;:0,&quot;cy&quot;:0,&quot;scaleX&quot;:1,&quot;scaleY&quot;:1}" transform="translate(-9,51)"/>
+    <text x="160" y="206" text-anchor="middle" font-size="14" font-weight="bold" fill="#1B2631" id="text_50ion10" data-type="text" data-name="text" data-transform="{&quot;tx&quot;:-8,&quot;ty&quot;:58,&quot;rotate&quot;:0,&quot;cx&quot;:0,&quot;cy&quot;:0,&quot;scaleX&quot;:1,&quot;scaleY&quot;:1}" transform="translate(-8,58)">Host / workstation</text>
+    <text x="160" y="228" text-anchor="middle" font-size="12" fill="#1E8449" id="text_zv5w33j" data-type="text" data-name="text" data-transform="{&quot;tx&quot;:-9,&quot;ty&quot;:60,&quot;rotate&quot;:0,&quot;cx&quot;:0,&quot;cy&quot;:0,&quot;scaleX&quot;:1,&quot;scaleY&quot;:1}" transform="translate(-9,60)">Acceso permitido:</text>
+    <text x="160" y="247" text-anchor="middle" font-size="12" fill="#1B2631" id="text_y7ebq2b" data-type="text" data-name="text" data-transform="{&quot;tx&quot;:-12,&quot;ty&quot;:62,&quot;rotate&quot;:0,&quot;cx&quot;:0,&quot;cy&quot;:0,&quot;scaleX&quot;:1,&quot;scaleY&quot;:1}" transform="translate(-12,62)">frontend  8080</text>
+    <text x="160" y="272" text-anchor="middle" font-size="12" fill="#B03A2E" id="text_27mrneo" data-type="text" data-name="text" data-transform="{&quot;tx&quot;:-8,&quot;ty&quot;:55,&quot;rotate&quot;:0,&quot;cx&quot;:0,&quot;cy&quot;:0,&quot;scaleX&quot;:1,&quot;scaleY&quot;:1}" transform="translate(-8,55)">Acceso denegado:</text>
+    <text x="160" y="291" text-anchor="middle" font-size="12" fill="#1B2631" id="text_yvrzgsb" data-type="text" data-name="text" data-transform="{&quot;tx&quot;:-10,&quot;ty&quot;:55,&quot;rotate&quot;:0,&quot;cx&quot;:0,&quot;cy&quot;:0,&quot;scaleX&quot;:1,&quot;scaleY&quot;:1}" transform="translate(-10,55)">backend 8080</text>
+    <text x="160" y="312" text-anchor="middle" font-size="12" fill="#1B2631" id="text_npmzk7u" data-type="text" data-name="text" data-transform="{&quot;tx&quot;:-10,&quot;ty&quot;:53,&quot;rotate&quot;:0,&quot;cx&quot;:0,&quot;cy&quot;:0,&quot;scaleX&quot;:1,&quot;scaleY&quot;:1}" transform="translate(-10,53)">MySQL 3306</text>
+    <line x1="275" y1="330" x2="330" y2="330" stroke="#B03A2E" stroke-width="2.5" stroke-dasharray="6 4" id="line_vit7nea" data-type="line" data-name="line" data-transform="{&quot;tx&quot;:-4,&quot;ty&quot;:0,&quot;rotate&quot;:0,&quot;cx&quot;:0,&quot;cy&quot;:0,&quot;scaleX&quot;:1,&quot;scaleY&quot;:1}" transform="translate(-4,0)"/>
+    <text x="302" y="322" text-anchor="middle" font-size="11" font-weight="bold" fill="#B03A2E" id="text_3556w1w" data-type="text" data-name="text" data-transform="{&quot;tx&quot;:-3,&quot;ty&quot;:0,&quot;rotate&quot;:0,&quot;cx&quot;:0,&quot;cy&quot;:0,&quot;scaleX&quot;:1,&quot;scaleY&quot;:1}" transform="translate(-3,0)">sin puertos</text>
+    <line x1="640" y1="138" x2="640" y2="180" stroke="#2C3E50" stroke-width="2.5" marker-end="url(#arrow)" id="line_ni749h9" data-type="line" data-name="line"/>
+    <text x="640.0" y="151.0" text-anchor="middle" font-family="Segoe UI,Arial,sans-serif" font-size="12" font-weight="bold" fill="#2C3E50" id="text_3ib2lx7" data-type="text" data-name="text" data-transform="{&quot;tx&quot;:49,&quot;ty&quot;:13,&quot;rotate&quot;:0,&quot;cx&quot;:0,&quot;cy&quot;:0,&quot;scaleX&quot;:1,&quot;scaleY&quot;:1}" transform="translate(49,13)">HTTP 8080</text>
+    <line x1="640" y1="346" x2="640" y2="428" stroke="#2C3E50" stroke-width="2.5" marker-end="url(#arrow)" id="line_cd52rje" data-type="line" data-name="line"/>
+    <text x="640.0" y="379.0" text-anchor="middle" font-family="Segoe UI,Arial,sans-serif" font-size="12" font-weight="bold" fill="#2C3E50" id="text_a0an3zd" data-type="text" data-name="text" data-transform="{&quot;tx&quot;:75,&quot;ty&quot;:-13,&quot;rotate&quot;:0,&quot;cx&quot;:0,&quot;cy&quot;:0,&quot;scaleX&quot;:1,&quot;scaleY&quot;:1}" transform="translate(75,-13)">HTTP /api/  8080/tcp</text>
+    <line x1="200" y1="193" x2="435" y2="258" stroke="#1E8449" stroke-width="2.5" marker-end="url(#arrow)" id="line_dl6oejs" data-type="line" data-name="line" data-transform="{&quot;tx&quot;:-41,&quot;ty&quot;:160,&quot;rotate&quot;:-15.556634986393092,&quot;cx&quot;:0,&quot;cy&quot;:0,&quot;scaleX&quot;:1,&quot;scaleY&quot;:1}" transform="translate(-41,160) rotate(-15.556634986393092 0 0)"/>
+    <text x="317.5" y="217.5" text-anchor="middle" font-family="Segoe UI,Arial,sans-serif" font-size="12" font-weight="bold" fill="#1E8449" id="text_bt1szhv" data-type="text" data-name="text" data-transform="{&quot;tx&quot;:-19.508331298828125,&quot;ty&quot;:66.5,&quot;rotate&quot;:0,&quot;cx&quot;:0,&quot;cy&quot;:0,&quot;scaleX&quot;:1,&quot;scaleY&quot;:1}" transform="translate(-19.508331298828125,66.5)">permitido</text>
+    <text x="640" y="700" text-anchor="middle" font-size="15" font-weight="bold" fill="#2C3E50" id="text_ozs6pdv" data-type="text" data-name="text" data-transform="{&quot;tx&quot;:0,&quot;ty&quot;:-2,&quot;rotate&quot;:0,&quot;cx&quot;:0,&quot;cy&quot;:0,&quot;scaleX&quot;:1,&quot;scaleY&quot;:1}" transform="translate(0,-2)">Matriz de accesos</text>
+    <rect x="330" y="714" width="620" height="26" fill="#EAEDED" id="rect_ueg5nlm" data-type="rect" data-name="rect" data-transform="{&quot;tx&quot;:0,&quot;ty&quot;:-4.20001220703125,&quot;rotate&quot;:0,&quot;cx&quot;:0,&quot;cy&quot;:0,&quot;scaleX&quot;:1,&quot;scaleY&quot;:1}" transform="translate(0,-4.20001220703125)"/>
+    <text x="346" y="732" font-size="12" font-weight="bold" fill="#1B2631" id="text_0g09h1q" data-type="text" data-name="text">Origen</text>
+    <text x="520" y="732" font-size="12" font-weight="bold" fill="#1B2631" id="text_tqn5y4q" data-type="text" data-name="text">Destino</text>
+    <text x="700" y="732" font-size="12" font-weight="bold" fill="#1B2631" id="text_xr1uc4h" data-type="text" data-name="text">Puerto</text>
+    <text x="800" y="732" font-size="12" font-weight="bold" fill="#1B2631" id="text_bkc7dn7" data-type="text" data-name="text">Regla</text>
+    <text x="346" y="757" font-size="12" fill="#1B2631" id="text_tddzi4o" data-type="text" data-name="text">Internet</text>
+    <text x="520" y="757" font-size="12" fill="#1B2631" id="text_5ayp975" data-type="text" data-name="text">apf2-frontend</text>
+    <text x="700" y="757" font-size="12" fill="#1B2631" id="text_qo9zkho" data-type="text" data-name="text">8080 -&gt; 80</text>
+    <text x="800" y="757" font-size="12" font-weight="bold" fill="#1E8449" id="text_zwds89d" data-type="text" data-name="text">PERMITIDO</text>
+    <rect x="330" y="764" width="620" height="24" fill="#F8F9F9" id="rect_qs3txs4" data-type="rect" data-name="rect"/>
+    <text x="346" y="781" font-size="12" fill="#1B2631" id="text_6rniias" data-type="text" data-name="text">apf2-frontend</text>
+    <text x="520" y="781" font-size="12" fill="#1B2631" id="text_kqld6kk" data-type="text" data-name="text">apf2-backend</text>
+    <text x="700" y="781" font-size="12" fill="#1B2631" id="text_5obr5k9" data-type="text" data-name="text">8080</text>
+    <text x="800" y="781" font-size="12" font-weight="bold" fill="#1E8449" id="text_qr1ygus" data-type="text" data-name="text">PERMITIDO</text>
+    <text x="346" y="805" font-size="12" fill="#1B2631" id="text_nzj8otm" data-type="text" data-name="text">apf2-backend</text>
+    <text x="520" y="805" font-size="12" fill="#1B2631" id="text_p1l48a5" data-type="text" data-name="text">apf2-db</text>
+    <text x="700" y="805" font-size="12" fill="#1B2631" id="text_70zg823" data-type="text" data-name="text">3306</text>
+    <text x="800" y="805" font-size="12" font-weight="bold" fill="#1E8449" id="text_9qtd6rm" data-type="text" data-name="text">PERMITIDO</text>
+    <rect x="330" y="812" width="620" height="24" fill="#F8F9F9" id="rect_gffwgki" data-type="rect" data-name="rect"/>
+    <text x="346" y="829" font-size="12" fill="#1B2631" id="text_4tjdo1k" data-type="text" data-name="text">Host</text>
+    <text x="520" y="829" font-size="12" fill="#1B2631" id="text_zh8gu20" data-type="text" data-name="text">apf2-backend</text>
+    <text x="700" y="829" font-size="12" fill="#1B2631" id="text_t00b5yx" data-type="text" data-name="text">8080</text>
+    <text x="800" y="829" font-size="12" font-weight="bold" fill="#B03A2E" id="text_dwvps33" data-type="text" data-name="text">DENEGADO</text>
+    <text x="346" y="853" font-size="12" fill="#1B2631" id="text_1vo2t3i" data-type="text" data-name="text">Host</text>
+    <text x="520" y="853" font-size="12" fill="#1B2631" id="text_tbg75ae" data-type="text" data-name="text">apf2-db</text>
+    <text x="700" y="853" font-size="12" fill="#1B2631" id="text_ado2ots" data-type="text" data-name="text">3306</text>
+    <text x="800" y="853" font-size="12" font-weight="bold" fill="#B03A2E" id="text_kxbo3zy" data-type="text" data-name="text">DENEGADO</text>
+    <rect x="330" y="860" width="620" height="24" fill="#F8F9F9" id="rect_qmlvlvh" data-type="rect" data-name="rect"/>
+    <text x="346" y="877" font-size="12" fill="#1B2631" id="text_xv1gxii" data-type="text" data-name="text">apf2-private</text>
+    <text x="520" y="877" font-size="12" fill="#1B2631" id="text_eblpyid" data-type="text" data-name="text">Internet</text>
+    <text x="700" y="877" font-size="12" fill="#1B2631" id="text_l71gbhj" data-type="text" data-name="text">salida</text>
+    <text x="800" y="877" font-size="12" font-weight="bold" fill="#B03A2E" id="text_u2dooun" data-type="text" data-name="text">DENEGADO</text>
+    <text x="640" y="855" text-anchor="middle" font-size="11" fill="#5D6D7E" id="text_18twlpi" data-type="text" data-name="text" data-transform="{&quot;tx&quot;:0,&quot;ty&quot;:53,&quot;rotate&quot;:0,&quot;cx&quot;:0,&quot;cy&quot;:0,&quot;scaleX&quot;:1,&quot;scaleY&quot;:1}" transform="translate(0,53)">Equivalencia con AWS: subred publica 10.20.10.0/24, subred privada 10.20.20.0/24, IGW y NAT Gateway - ver infra/cloud/ (SIMULADO)</text>
+  </g>
 </svg>
