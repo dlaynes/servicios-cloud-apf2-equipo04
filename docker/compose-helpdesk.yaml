@@ -1,0 +1,119 @@
+# =====================================================================
+# APF2 - Mesa de ayuda con tickets (RF-09) usando FreeScout
+#
+# Esta es una instancia autoalojada open source (FreeScout, licencia
+# AGPL-3.0) configurable por variables de entorno. Reemplaza el SaaS
+# externo previsto en el APF1 y se integra a la misma arquitectura:
+#
+#   - helpdesk-db: base de datos propia de FreeScout (MySQL 8).
+#   - helpdesk:    aplicacion FreeScout, accesible solo por la red privada.
+#
+# Ninguno de los dos servicios publica un puerto en el host. El acceso
+# se hace a traves del proxy del portal (/soporte), igual que el backend,
+# para mantener un unico borde de entrada.
+#
+# Uso:
+#   1. Copie config/ejemplos.env -> .env y complete los valores.
+#   2. Suba primero el stack principal: docker compose -f docker/compose.yaml up -d
+#   3. Suba esta mesa de ayuda:
+#      docker compose -f docker/compose-helpdesk.yaml --env-file .env up -d
+# =====================================================================
+
+name: apf2-aspefo-helpdesk
+
+x-logging: &default-logging
+  driver: json-file
+  options:
+    max-size: "10m"
+    max-file: "3"
+
+# La red privada ya existe; se reutiliza la del stack principal.
+networks:
+  apf2_private:
+    name: apf2_private
+    external: true
+
+volumes:
+  helpdesk_db_data:
+    name: apf2_helpdesk_db_data
+  helpdesk_data:
+    name: apf2_helpdesk_data
+
+services:
+
+  # ------------------------------------ Base de datos de la mesa de ayuda
+  helpdesk-db:
+    image: mysql:8.0
+    container_name: apf2-helpdesk-db
+    restart: unless-stopped
+    logging: *default-logging
+    command: --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci
+    environment:
+      MYSQL_DATABASE: freescout
+      MYSQL_USER: freescout
+      # Las credenciales llegan por variable de entorno desde el .env
+      MYSQL_PASSWORD: ${FREESCOUT_DB_PASSWORD:?FREESCOUT_DB_PASSWORD es obligatorio}
+      MYSQL_ROOT_PASSWORD: ${FREESCOUT_DB_ROOT_PASSWORD:?FREESCOUT_DB_ROOT_PASSWORD es obligatorio}
+    volumes:
+      - helpdesk_db_data:/var/lib/mysql
+    networks:
+      - apf2_private
+    healthcheck:
+      test: ["CMD-SHELL", "mysqladmin ping -h 127.0.0.1 -u root -p\"$$MYSQL_ROOT_PASSWORD\" --silent"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 40s
+    # Sin 'ports:': la base de datos de la mesa de ayuda no se publica al host.
+
+  # ------------------------------------ Aplicacion FreeScout
+  helpdesk:
+    image: nfrastack/freescout:latest
+    container_name: apf2-helpdesk
+    restart: unless-stopped
+    logging: *default-logging
+    depends_on:
+      helpdesk-db:
+        condition: service_healthy
+    environment:
+      # --- Base de datos propia de la mesa de ayuda ---
+      FREESCOUT_DB_HOST: helpdesk-db
+      FREESCOUT_DB_PORT: "3306"
+      FREESCOUT_DB_NAME: freescout
+      FREESCOUT_DB_USER: freescout
+      FREESCOUT_DB_PASSWORD: ${FREESCOUT_DB_PASSWORD:?FREESCOUT_DB_PASSWORD es obligatorio}
+      FREESCOUT_DB_PREFIX: ""
+      # --- Identidad publica y localizacion ---
+      FREESCOUT_APP_URL: ${FREESCOUT_APP_URL:-http://localhost:8080/soporte}
+      FREESCOUT_TIMEZONE: ${FREESCOUT_TIMEZONE:-America/Lima}
+      FREESCOUT_LOCALE: ${FREESCOUT_LOCALE:-es}
+      FREESCOUT_ADMIN_EMAIL: ${FREESCOUT_ADMIN_EMAIL:?FREESCOUT_ADMIN_EMAIL es obligatorio}
+      FREESCOUT_ADMIN_NAME: ${FREESCOUT_ADMIN_NAME:-Administrador ASPEFO}
+      FREESCOUT_ADMIN_PASSWORD: ${FREESCOUT_ADMIN_PASSWORD:?FREESCOUT_ADMIN_PASSWORD es obligatorio}
+      # --- Correo para el envio y la recepcion de tickets ---
+      FREESCOUT_MAIL_HOST: ${FREESCOUT_MAIL_HOST:-}
+      FREESCOUT_MAIL_PORT: ${FREESCOUT_MAIL_PORT:-587}
+      FREESCOUT_MAIL_USERNAME: ${FREESCOUT_MAIL_USERNAME:-}
+      FREESCOUT_MAIL_PASSWORD: ${FREESCOUT_MAIL_PASSWORD:-}
+      FREESCOUT_MAIL_ENCRYPTION: ${FREESCOUT_MAIL_ENCRYPTION:-tls}
+      FREESCOUT_MAIL_FROM: ${FREESCOUT_MAIL_FROM:-}
+      # --- Recursos ---
+      PHP_MEMORY_LIMIT: 512M
+      PHP_UPLOAD_LIMIT: "${FREESCOUT_MAX_UPLOAD_MB:-10}M"
+      TZ: ${FREESCOUT_TIMEZONE:-America/Lima}
+      # Nota: los nombres de variables corresponden al prefijo FREESCOUT_*
+      # usado por la imagen nfrastack/freescout. Si se cambia de imagen
+      # hay que revisar la documentacion oficial de cada variable.
+    volumes:
+      - helpdesk_data:/data
+    networks:
+      - apf2_private
+    healthcheck:
+      # FreeScout expone la aplicacion en el puerto 80 dentro del contenedor.
+      test: ["CMD-SHELL", "wget -q --spider --timeout=10 http://localhost/ || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 60s
+    # Sin 'ports:': el acceso al portal de tickets es por el proxy del
+    # portal (nginx) en /soporte, nunca directo al contenedor.
