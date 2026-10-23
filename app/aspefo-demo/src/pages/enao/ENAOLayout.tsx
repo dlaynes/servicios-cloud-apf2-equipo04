@@ -1,27 +1,45 @@
 import { NavLink, Outlet } from 'react-router-dom';
 import { motion } from 'motion/react';
-import { Home, ClipboardList, LayoutDashboard, Shield } from 'lucide-react';
+import { Home, ClipboardList, LayoutDashboard, Shield, FileUp, ReceiptText, ClipboardCheck, BarChart3 } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 
-export default function ENAOLayout() {
-  const { isStaff } = useAuth();
+interface NavItem {
+  name: string;
+  path: string;
+  end?: boolean;
+  icon: typeof Home;
+}
 
-  const enaoNavItems = [
+export default function ENAOLayout() {
+  const { isStaff, isAuthenticated, role } = useAuth();
+
+  const items: NavItem[] = [
     { name: 'Portada Principal', path: '/', icon: Home },
     { name: 'Inicio ENAO', path: '/enao', end: true, icon: ClipboardList },
     { name: 'Acceso Intranet', path: '/enao/login', icon: LayoutDashboard },
   ];
 
-  if (isStaff) {
-    enaoNavItems.push({ name: 'Admin', path: '/enao/admin', icon: Shield });
+  // RF-03 y RF-04: solo el postulante autenticado usa los endpoints /api/me/*
+  if (isAuthenticated && !isStaff) {
+    items.push({ name: 'Documentos', path: '/enao/documentos', icon: FileUp });
+    items.push({ name: 'Comprobante', path: '/enao/comprobante', icon: ReceiptText });
   }
+
+  // Revision y reportes: solo personal ADMIN / MAINTAINER
+  if (isStaff) {
+    items.push({ name: 'Admin', path: '/enao/admin', icon: Shield });
+    items.push({ name: 'Revision', path: '/enao/documentos-admin', icon: ClipboardCheck });
+    items.push({ name: 'Reportes', path: '/enao/reportes', icon: BarChart3 });
+  }
+
+  void role; // se conserva por si se restringe el acceso por seccion
 
   return (
     <div className="bg-slate-50 min-h-screen">
-      <nav className="bg-aspefo-navy text-white border-b border-white/10 sticky top-20 z-40">
+      <nav className="bg-aspefo-navy text-white border-b border-white/10 sticky top-20 z-40 overflow-x-auto">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between h-12">
           <div className="flex space-x-1 h-full">
-            {enaoNavItems.map((item) => (
+            {items.map((item) => (
               <NavLink
                 key={item.path}
                 to={item.path}

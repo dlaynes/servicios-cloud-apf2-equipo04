@@ -76,3 +76,82 @@ export interface ResultUpdateRequest {
   maximumScore: number;
   status: string;
 }
+
+// --------------------------------------------------------------- RF-03
+export type DocumentStatus = 'PENDING' | 'APPROVED' | 'REJECTED';
+
+export interface ApplicantDocumentResponse {
+  id: number;
+  applicantId?: number;
+  applicantName?: string;
+  documentType: string;
+  originalName: string;
+  storageKey: string;
+  declaredContentType: string;
+  detectedContentType: string;
+  sizeBytes: number;
+  sha256: string;
+  status: DocumentStatus;
+  uploadComment?: string | null;
+  reviewedBy?: string | null;
+  reviewComment?: string | null;
+  uploadedAt: string;
+  reviewedAt?: string | null;
+  downloadCount: number;
+  lastDownloadAt?: string | null;
+}
+
+export interface DocumentReviewRequest {
+  status: 'APPROVED' | 'REJECTED';
+  comment?: string;
+}
+
+// --------------------------------------------------------------- RF-04
+export interface ComprobanteVerification {
+  serial: string;
+  valid: boolean;
+  state: string;
+  period: string;
+  campus: string;
+  institution: string;
+  generatedAt: string;
+  sha256Prefix: string;
+}
+
+// --------------------------------------------------------------- RF-08
+export interface ReportAggregationRow {
+  label: string;
+  count: number;
+  extra?: number | null;
+}
+
+export interface ReportFilter {
+  name: string;
+  value: string;
+}
+
+export interface ReportResponse {
+  dimension: string;
+  filters: ReportFilter[];
+  rows: ReportAggregationRow[];
+  totalCount: number;
+  averageScore?: number | null;
+}
+
+export interface SummaryReport {
+  totalApplicants: number;
+  totalVerified: number;
+  totalRejected: number;
+  totalPending: number;
+  totalDocuments: number;
+  totalComprobantes: number;
+  totalActive: number;
+  totalAnnulled: number;
+  averageScore?: number | null;
+  maximumScore?: number | null;
+  minimumScore?: number | null;
+  byStatus: ReportAggregationRow[];
+  byPeriod: ReportAggregationRow[];
+  byCampus: ReportAggregationRow[];
+  byInstitution: ReportAggregationRow[];
+}

@@ -12,6 +12,8 @@ import java.time.LocalDateTime;
 public class DocumentUploadResponse {
 
     Long id;
+    Long applicantId;
+    String applicantName;
     String documentType;
     String originalName;
     String storageKey;

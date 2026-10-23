@@ -286,6 +286,8 @@ public class DocumentService {
     private DocumentUploadResponse toDto(ApplicantDocument d) {
         return DocumentUploadResponse.builder()
                 .id(d.getId())
+                .applicantId(d.getApplicant().getId())
+                .applicantName(d.getApplicant().getFullName())
                 .documentType(d.getDocumentType())
                 .originalName(d.getOriginalName())
                 .storageKey(d.getStorageKey())
