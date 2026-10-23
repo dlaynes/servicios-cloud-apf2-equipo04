@@ -13,30 +13,12 @@ credenciales.
 | URL | https://github.com/dlaynes/servicios-cloud-apf2-equipo04 |
 | Nombre | `servicios-cloud-apf2-equipo04` |
 | Ram principal | `main` |
-| Submodulos | `app/aspefo-demo`, `app/backend-enao-ti` |
+| Codigo en el repositorio | `app/aspefo-demo`, `app/backend-enao-ti` |
 
-Clonado con los submodulos:
-
-```bash
-git clone --recurse-submodules https://github.com/dlaynes/servicios-cloud-apf2-equipo04.git
-```
-
-Verificacion del estado de los submodulos:
+Clonado con un solo repositorio:
 
 ```bash
-git submodule status
-```
-
-El codigo de los dos componentes **no se copio** al repositorio: se
-incorpora como submodulo Git, lo que conserva el historial, el remoto y
-la posibilidad de actualizar cada componente por separado. En el
-repositorio padre cada uno se registra con modo `160000` (entrada de
-directorio enlazada a un commit concreto):
-
-```bash
-git ls-files -s app/
-# 160000 416e4c7... 0  app/aspefo-demo
-# 160000 52d0a52... 0  app/backend-enao-ti
+git clone https://github.com/dlaynes/servicios-cloud-apf2-equipo04.git
 ```
 
 ## Estructura del repositorio
@@ -44,10 +26,9 @@ git ls-files -s app/
 ```text
 servicios-cloud-apf2-equipo04/
 |-- README.md                 Requisitos, configuracion, ejecucion, verificacion
-|-- .gitmodules               Declaracion de los submodulos
 |-- .gitattributes            Normalizacion LF y tratamiento de binarios
 |-- .dockerignore             Contexto de build de Docker
-|-- app/                      Codigo de la solucion (submodulos)
+|-- app/                      Codigo de la solucion (parte del repositorio)
 |-- docker/                   Dockerfiles, compose.yaml, nginx-frontend.conf
 |-- infra/                    Terraform de la VPC y equivalencias de red
 |-- config/ejemplos.env       Variables de ejemplo, sin secretos
@@ -102,19 +83,6 @@ git log -p --all | grep -iE 'password[[:space:]]*=[[:space:]]*[^*[:space:]]{6,}|
 python scripts/verificar-codificacion.py .
 ```
 
-### Correccion aplicada durante este hito
-
-El `DataSeeder` del backend contenia contrasenas escritas en el codigo
-(`admin123`, `maintainer123`, `123456`). Se sustituyeron por variables
-de entorno y el sembrado quedo desactivado por defecto:
-
-```properties
-enao.seed.enabled=false
-enao.seed.admin-password=
-enao.seed.maintainer-password=
-enao.seed.demo-password=
-```
-
 En el perfil `dev` (desarrollo local) se mantienen los valores de
 prueba, y en el perfil `prod` (el que usa el despliegue con
 contenedores) el sembrado esta desactivado.
@@ -146,7 +114,7 @@ sustentacion pueda seguir la evolucion del proyecto:
 
 | Commit | Contenido |
 |---|---|
-| Estructura inicial | Submodulos, `.gitignore`, `.gitmodules`, `.gitattributes` |
+| Estructura inicial | `app/` como contenido del repositorio, `.gitignore`, `.gitattributes` |
 | Contenerizacion | `docker/` con los Dockerfiles, `compose.yaml` y la configuracion de Nginx |
 | Infraestructura | `infra/` con los manifiestos Terraform y las equivalencias de red |
 | Correccion del backend | Perfiles `dev`/`prod`, endpoint de salud, CORS parametrizado, sembrado seguro |

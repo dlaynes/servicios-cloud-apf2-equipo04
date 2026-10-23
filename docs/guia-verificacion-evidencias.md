@@ -64,8 +64,7 @@ No se afirma un despliegue real en AWS:
 ### 4.1 Clonar el repositorio
 
 El codigo de los dos componentes esta **directamente** dentro del repositorio,
-en `app/aspefo-demo` (frontend) y en `app/backend-enao-ti` (backend); no hay
-submodulos.
+en `app/aspefo-demo` (frontend) y en `app/backend-enao-ti` (backend).
 
 ```bash
 git clone https://github.com/dlaynes/servicios-cloud-apf2-equipo04.git
