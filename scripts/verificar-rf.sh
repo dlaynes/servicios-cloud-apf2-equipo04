@@ -190,8 +190,10 @@ else
   result "7. Contenido no PDF rechazado" "$CODE7" "415"
 
   echo "8) Rechazo de un archivo mayor al limite (11 MB)"
-  dd if=/dev/zero of="$TMP/grande.pdf" bs=1M count=11 2>/dev/null
-  printf '%%PDF-1.4' > "$TMP/grande.pdf"
+  # Un solo paso: la cabecera %PDF y despues 11 MB de relleno. No se usa
+  # 'printf > archivo' porque truncaria el archivo a 8 bytes y el backend
+  # lo aceptaria con 201 (correcto) y el caso quedaria sin comprobar.
+  { printf '%%PDF-1.4\n'; dd if=/dev/zero bs=1M count=11 2>/dev/null; } > "$TMP/grande.pdf"
   CODE8=$(curl -sS -o /dev/null -w '%{http_code}' -X POST "$BASE/api/me/documents" \
       -H "$AUTH_APPL" \
       -F "file=@$TMP/grande.pdf;filename=DNI-grande.pdf" \
