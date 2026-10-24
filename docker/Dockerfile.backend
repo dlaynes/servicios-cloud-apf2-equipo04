@@ -23,6 +23,11 @@ FROM eclipse-temurin:21-jre-alpine AS runtime
 # Usuario no-root: la aplicacion no corre como root dentro del contenedor.
 RUN addgroup -S aspefo && adduser -S -G aspefo -u 10001 aspefo
 
+# Directorio del almacenamiento de documentos (RF-03), propiedad del usuario
+# sin privilegios: sin esto el UID 10001 no puede escribir y la subida de un
+# documento termina en un 500 de AccessDeniedException.
+RUN mkdir -p /app/data/documents && chown -R aspefo:aspefo /app/data
+
 WORKDIR /app
 COPY --from=build --chown=aspefo:aspefo /build/target/*.jar app.jar
 

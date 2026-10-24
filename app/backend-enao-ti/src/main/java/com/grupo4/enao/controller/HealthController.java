@@ -1,8 +1,11 @@
 package com.grupo4.enao.controller;
 
+import com.grupo4.enao.model.Role;
+import com.grupo4.enao.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
-import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.dao.DataAccessException;
 import org.springframework.http.ResponseEntity;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -16,13 +19,18 @@ import java.util.Map;
  * Se usa como HEALTHCHECK del contenedor backend y como comprobacion de
  * disponibilidad en los despliegues. Es publico a proposito: un monitor
  * externo no debe necesitar credenciales para consultar el estado.
- * No expone datos del negocio, solo metadatos tecnicos.
+ *
+ * No expone datos del negocio y tampoco credenciales: el campo
+ * adminAccount solo informa si el bootstrap del administrador tiene o no
+ * un usuario de personal disponible, lo que permite diagnosticar un
+ * problema de configuracion sin revisar los logs.
  */
 @RestController
 @RequiredArgsConstructor
 public class HealthController {
 
     private final JdbcTemplate jdbcTemplate;
+    private final UserRepository userRepository;
 
     @GetMapping("/api/health")
     public ResponseEntity<Map<String, Object>> health() {
@@ -31,19 +39,28 @@ public class HealthController {
         body.put("service", "backend-enao");
         body.put("timestamp", LocalDateTime.now().toString());
         body.put("database", databaseState());
+        body.put("adminAccount", adminAccountState());
         return ResponseEntity.ok(body);
     }
 
-    /**
-     * Comprueba la conexion con la base de datos. Si la base no responde,
-     * el servicio se declara DOWN porque no puede operar.
-     */
+    /** Comprueba la conexion con la base de datos. */
     private String databaseState() {
         try {
             Integer one = jdbcTemplate.queryForObject("SELECT 1", Integer.class);
             return (one != null && one == 1) ? "UP" : "DOWN";
         } catch (Exception ex) {
             return "DOWN";
+        }
+    }
+
+    /** Informa si hay un usuario de personal disponible para el panel administrativo. */
+    private String adminAccountState() {
+        try {
+            return userRepository.findFirstByRoleOrderByCreatedAtAsc(Role.ADMIN).isPresent()
+                    || userRepository.findFirstByRoleOrderByCreatedAtAsc(Role.MAINTAINER).isPresent()
+                    ? "CONFIGURED" : "MISSING";
+        } catch (DataAccessException ex) {
+            return "UNKNOWN";
         }
     }
 }

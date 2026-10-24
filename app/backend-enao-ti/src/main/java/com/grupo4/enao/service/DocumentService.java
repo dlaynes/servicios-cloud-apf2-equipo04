@@ -7,6 +7,7 @@ import com.grupo4.enao.dto.FileDownload;
 import com.grupo4.enao.storage.ObjectStorageAdapter;
 import com.grupo4.enao.exception.BusinessRuleViolationException;
 import com.grupo4.enao.exception.ForbiddenOperationException;
+import com.grupo4.enao.exception.PayloadTooLargeException;
 import com.grupo4.enao.exception.ResourceNotFoundException;
 import com.grupo4.enao.exception.UnsupportedMediaTypeException;
 import com.grupo4.enao.model.Applicant;
@@ -58,24 +59,21 @@ public class DocumentService {
     @Transactional
     public DocumentUploadResponse upload(Applicant applicant, MultipartFile file,
                                          String documentType, String uploadComment) {
-        String type = documentType == null ? "" : documentType.toUpperCase(Locale.ROOT);
-        if (!files.getAllowedTypes().contains(type)) {
-            throw new BusinessRuleViolationException(
-                    "Tipo de documento no permitido. Valores aceptados: " + files.getAllowedTypes());
-        }
-
+        // orden de las comprobaciones: primero lo mas barato, y el tamano
+        // antes de leer los bytes, para que un archivo demasiado grande no
+        // llegue al almacenamiento ni dispare un 500.
         String originalName = sanitize(file.getOriginalFilename());
         String extension = extensionOf(originalName);
         if (!files.getAllowedExtensions().contains(extension)) {
             throw new BusinessRuleViolationException(
                     "Extension no permitida. Extensiones aceptadas: " + files.getAllowedExtensions());
         }
-
         if (file.getSize() <= 0) {
             throw new BusinessRuleViolationException("El archivo esta vacio");
         }
-        if (file.getSize() > files.getMaxFileSizeMb() * 1024L * 1024L) {
-            throw new BusinessRuleViolationException(
+        long limiteArch = files.getMaxFileSizeMb() * 1024L * 1024L;
+        if (file.getSize() > limiteArch) {
+            throw new PayloadTooLargeException(
                     "El archivo supera el tamano maximo de " + files.getMaxFileSizeMb() + " MB");
         }
 
@@ -86,8 +84,15 @@ public class DocumentService {
         }
         long totalBytes = documentRepository.totalBytesByApplicant(applicant);
         if (totalBytes + file.getSize() > files.getMaxTotalMbPerApplicant() * 1024L * 1024L) {
+            throw new PayloadTooLargeException(
+                    "La suma de documentos por postulante supera los "
+                            + files.getMaxTotalMbPerApplicant() + " MB");
+        }
+
+        String type = documentType == null ? "" : documentType.toUpperCase(Locale.ROOT);
+        if (!files.getAllowedTypes().contains(type)) {
             throw new BusinessRuleViolationException(
-                    "La suma de documentos por postulante supera los " + files.getMaxTotalMbPerApplicant() + " MB");
+                    "Tipo de documento no permitido. Valores aceptados: " + files.getAllowedTypes());
         }
 
         byte[] bytes;

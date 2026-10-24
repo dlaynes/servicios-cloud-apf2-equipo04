@@ -283,6 +283,65 @@ Si la contrasena no llega, el backend registra un aviso en el log al arrancar
 y el resto del despliegue queda igual; para usar la revision y los reportes
 definela en el `.env` y reconstruye el servicio `backend`.
 
+## Defectos encontrados el 24/10/2026 con el despliegue en marcha (y sus correcciones)
+
+En la corrida de `scripts/verificar-rf.sh` del 24/10/2026 el ciclo llego a
+24 comprobaciones con 5 OK y 23 fallos; la causa no era una sino tres y
+quedaron diferenciadas en el log tras corregir la extraccion de los campos
+del JSON (los pasos que dependen de un token que no llego se marcan
+`[SALTADO]` y dejan de acumular fallos en cascada).
+
+### 1) El almacenamiento de documentos no tenia volumen (causa del 500 en RF-03)
+
+El servicio `backend` corre con `USER aspefo` (UID 10001), el `WORKDIR /app`
+era propiedad de root y `./data/documents` no existia, por lo que
+`Files.createDirectories` lanzaba `AccessDeniedException`, el servicio lo
+envolvia en `IllegalStateException` y el endpoint de subida devolvia 500 en
+lugar de 201. El mismo archivo con contenido no declarado si daba 415, con lo
+que se confirmo que el backend desplegado tenia el endpoint y la deteccion de
+magic bytes.
+
+Correccion:
+
+- `docker/Dockerfile.backend` crea `/app/data/documents` con el UID del usuario
+  (`mkdir -p /app/data/documents && chown -R aspefo:aspefo /app/data`).
+- `docker/compose.yaml` monta un volumen propio `backend_data:/app/data`,
+  define `FILES_STORAGE_PATH: /app/data/documents` y deja el path del backend
+  dentro del contenedor en lugar de depender del filesystem del host.
+
+### 2) El archivo de 11 MB devolvia 500 en lugar de 413
+
+El limite de Nginx era el valor por defecto (1 MiB) con lo que el 11 MB
+llegaba al backend, y el limite por archivo de Spring se controlaba en el
+`DispatcherServlet`; el handler de `MaxUploadSizeExceededException` se
+registraba pero en esa corrida la respuesta fue 500. Con `client_max_body_size
+12m` en `/api/` el limite del proxy queda por encima del del backend, y el
+orden de las validaciones del `DocumentService` ahora verifica el tamano **antes
+de leer los bytes y de tocar el almacenamiento**, con una excepcion propia
+(`PayloadTooLargeException`) mapeada a 413: el archivo de 11 MB se rechaza por
+el backend con el mensaje del backend en lugar de un 500.
+
+### 3) Sin usuario de personal, el panel administrativo no podia usarse
+
+Con el sembrado apagado (`ENAO_SEED_ENABLED=false`) no habia usuario `admin`,
+asi que la revision de documentos y los reportes de RF-08 quedaban sin token y
+el comprobante no se podia emitir (el estado de la inscripcion seguia en
+`PENDING`). `AdminBootstrap` crea al administrador en el primer arranque si
+llega `ADMIN_PASSWORD` por variable de entorno, de forma idempotente e
+independiente del seeder; si la contrasena no llega, el backend avisa en el log
+y el despliegue no se rompe.
+
+Para no necesitar los logs a mano, `/api/health` ahora devuelve tambien
+`adminAccount`:
+
+```json
+{"status":"UP","service":"backend-enao","database":"UP","adminAccount":"CONFIGURED"}
+```
+
+Con `adminAccount=MISSING` se sabe que falta la contrasena del administrador,
+y con `CONFIGURED` que el bootstrap ya lo creo; ese valor no revela datos del
+negocio ni credenciales.
+
 ## Archivos relacionados
 
 - `docker/compose.yaml`

@@ -54,6 +54,12 @@ volumes:
   db_data:
     name: apf2_db_data
 
+  # Documentos de la postulacion (RF-03): el backend corre como UID 10001,
+  # asi que el volumen hereda los permisos del directorio de la imagen y la
+  # subida de documentos no depende del filesystem del host.
+  backend_data:
+    name: apf2_backend_data
+
 services:
 
   # -------------------------------------------------------------------
@@ -105,6 +111,8 @@ services:
       SPRING_DATASOURCE_URL: jdbc:mysql://db:3306/enao?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
       SPRING_DATASOURCE_USERNAME: enao
       SPRING_DATASOURCE_PASSWORD: ${MYSQL_PASSWORD:?MYSQL_PASSWORD es obligatorio}
+      # RF-03: ruta del almacenamiento de documentos dentro del contenedor.
+      FILES_STORAGE_PATH: /app/data/documents
       SPRING_JPA_HIBERNATE_DDL_AUTO: update
       ENAO_JWT_SECRET: ${JWT_SECRET:?JWT_SECRET es obligatorio}
       ENAO_JWT_EXPIRATION_MS: "86400000"
@@ -119,6 +127,8 @@ services:
       ENAO_ADMIN_BOOTSTRAP_ENABLED: ${ADMIN_BOOTSTRAP_ENABLED:-true}
       ENAO_ADMIN_BOOTSTRAP_USERNAME: ${ADMIN_USERNAME:-admin}
       ENAO_ADMIN_BOOTSTRAP_PASSWORD: ${ADMIN_PASSWORD:-}
+    volumes:
+      - backend_data:/app/data
     networks:
       - apf2_private
     healthcheck:
