@@ -23,6 +23,17 @@
 set -uo pipefail
 
 BASE="${1:-http://localhost:8080}"
+# La contrasena del administrador vive en el .env del repositorio y solo la
+# consume Compose: si no esta en el entorno, se lee del archivo para que la
+# prueba no dependa de variables exportadas a mano en la sesion.
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]:-$0}")" && pwd)"
+ENV_CANDIDATOS="$SCRIPT_DIR/../.env $SCRIPT_DIR/.env ./../.env ./.env"
+for candidato in $ENV_CANDIDATOS; do
+  if [ -z "${ADMIN_PASSWORD:-}" ] && [ -f "$candidato" ]; then
+    ADMIN_PASSWORD="$(sed -n 's/^[[:space:]]*ADMIN_PASSWORD[[:space:]]*=[[:space:]]*\(.*\)[[:space:]]*/\1/p' "$candidato" | head -n1)"
+    break
+  fi
+done
 ADMIN_PASS="${ADMIN_PASSWORD:-admin123}"
 OKS=0
 FALLOS=0
