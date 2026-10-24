@@ -1,8 +1,9 @@
 # Evidencias de validacion - APF2
 
-Registro de las verificaciones realizadas para el Avance Final 2.
-Cada evidencia tiene un identificador estable (E-01 a E-06) que se usa
-en la matriz de trazabilidad del informe y en las tablas de la plantilla.
+Registro de las verificaciones realizadas para los avances del proyecto.
+Cada evidencia tiene un identificador estable (E-01 a E-06 del APF2, y
+E-07 del cierre funcional) que se usa en la matriz de trazabilidad del
+informe y en las tablas de la plantilla.
 
 ## Indice
 
@@ -14,6 +15,7 @@ en la matriz de trazabilidad del informe y en las tablas de la plantilla.
 | E-04 | Contenerizacion y comunicacion entre servicios | Texto | `E-04-contenedores.md` |
 | E-05 | Repositorio, documentacion y control de secretos | Texto | `E-05-repositorio.md` |
 | E-06 | Observabilidad: logs, healthchecks y metricas | Texto | `E-06-observabilidad.md` |
+| E-07 | Ciclo funcional end-to-end de RF-03, RF-04 y RF-08 | Texto | `E-07-ciclo-funcional-rf.md` |
 
 ## Estado de las evidencias
 
