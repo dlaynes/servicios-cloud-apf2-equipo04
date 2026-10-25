@@ -54,12 +54,6 @@ volumes:
   db_data:
     name: apf2_db_data
 
-  # Documentos de la postulacion (RF-03): el backend corre como UID 10001,
-  # asi que el volumen hereda los permisos del directorio de la imagen y la
-  # subida de documentos no depende del filesystem del host.
-  backend_data:
-    name: apf2_backend_data
-
 services:
 
   # -------------------------------------------------------------------
@@ -111,8 +105,6 @@ services:
       SPRING_DATASOURCE_URL: jdbc:mysql://db:3306/enao?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
       SPRING_DATASOURCE_USERNAME: enao
       SPRING_DATASOURCE_PASSWORD: ${MYSQL_PASSWORD:?MYSQL_PASSWORD es obligatorio}
-      # RF-03: ruta del almacenamiento de documentos dentro del contenedor.
-      FILES_STORAGE_PATH: /app/data/documents
       SPRING_JPA_HIBERNATE_DDL_AUTO: update
       ENAO_JWT_SECRET: ${JWT_SECRET:?JWT_SECRET es obligatorio}
       ENAO_JWT_EXPIRATION_MS: "86400000"
@@ -120,15 +112,13 @@ services:
       # queda como red de seguridad para accesos directos a la API.
       ENAO_CORS_ALLOWED_ORIGINS: ${CORS_ALLOWED_ORIGINS:-http://localhost:8080}
       # Sin datos de ejemplo en el despliegue.
+      
+      
       ENAO_SEED_ENABLED: "false"
-      # Bootstrap del administrador en el primer arranque (idempotente).
-      # OPCIONAL: si no se define, el backend avisa en el log y el panel
-      # administrativo queda inaccesible hasta que se defina la variable.
-      ENAO_ADMIN_BOOTSTRAP_ENABLED: ${ADMIN_BOOTSTRAP_ENABLED:-true}
-      ENAO_ADMIN_BOOTSTRAP_USERNAME: ${ADMIN_USERNAME:-admin}
-      ENAO_ADMIN_BOOTSTRAP_PASSWORD: ${ADMIN_PASSWORD:-}
-    volumes:
-      - backend_data:/app/data
+      ENAO_SEED_ADMIN_PASSWORD: ${ENAO_SEED_ADMIN_PASSWORD}
+      ENAO_SEED_MAINTAINER_PASSWORD: ${ENAO_SEED_MAINTAINER_PASSWORD}
+      ENAO_SEED_DEMO_PASSWORD: ${ENAO_SEED_DEMO_PASSWORD}      
+      
     networks:
       - apf2_private
     healthcheck:
@@ -163,10 +153,7 @@ services:
       - apf2_public
       - apf2_private
     healthcheck:
-      # 127.0.0.1 y no localhost: evita el falso 'unhealthy' cuando el
-      # contenedor resuelve localhost a ::1 y nginx solo escucha IPv4.
-      # /health.txt es un recurso propio, mas barato que la SPA completa.
-      test: ["CMD-SHELL", "wget -q -O /dev/null http://127.0.0.1/health.txt || exit 1"]
+      test: ["CMD-SHELL", "wget -q --spider http://localhost/ || exit 1"]
       interval: 15s
       timeout: 5s
       retries: 3
