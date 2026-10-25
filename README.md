@@ -94,6 +94,31 @@ cp config/ejemplos.env .env
 | `MYSQL_ROOT_PASSWORD` | Si | Contrasena del usuario `root` de MySQL. |
 | `JWT_SECRET` | Si | Secreto de firma de los tokens JWT (HS256). Minimo 32 bytes. |
 | `CORS_ALLOWED_ORIGINS` | No | Origenes permitidos, separados por coma. Por defecto `http://localhost:8080`. |
+| `ENAO_SEED_ENABLED` | No | Activa el sembrado de usuarios y de un postulante de ejemplo. En el despliegue con contenedores va `false`; en el perfil dev con H2 va `true`. |
+| `ENAO_SEED_ADMIN_PASSWORD`, `ENAO_SEED_MAINTAINER_PASSWORD`, `ENAO_SEED_DEMO_PASSWORD` | Solo con el sembrado activo | Contraseñas de los tres usuarios que crea el sembrado. Sin efecto con `ENAO_SEED_ENABLED=false`. |
+| `ADMIN_PASSWORD` | Con el bootstrap del administrador | Contraseña con la que el backend crea al usuario `admin` en el primer arranque, sin datos de ejemplo. Es lo que habilita la revision de documentos y los reportes. |
+| `ADMIN_USERNAME` | No | Nombre del usuario del personal. Por defecto `admin`. |
+| `ADMIN_BOOTSTRAP_ENABLED` | No | Permite apagar el bootstrap en un entorno que ya tiene usuarios. |
+
+### Sembrado de datos y usuario del personal
+
+El despliegue con contenedores define `ENAO_SEED_ENABLED=false`: no crea
+usuarios ni postulantes de ejemplo, y las tres contrasenas `ENAO_SEED_*`
+quedan sin efecto. Con el sembrado apagado, quien abre los paneles de
+revision y de reportes necesita un usuario administrador, y ese lo crea
+`AdminBootstrap` en el primer arranque con la contrasena de `ADMIN_PASSWORD`
+(idempotente: solo crea si la tabla `users` esta vacia).
+
+Como indicador de estado, `/api/health` devuelve tambien `adminAccount`:
+
+```text
+{"status":"UP","service":"backend-enao","timestamp":"...","database":"UP","adminAccount":"CONFIGURED"}
+```
+
+`CONFIGURED` significa que hay un usuario de personal; `MISSING`, que no, y que
+definir `ADMIN_PASSWORD` (o encender el sembrado con sus contrasenas) es lo que
+hace falta. Ese valor es un metadato tecnico, no un dato de negocio, y no expone
+credenciales.
 
 Generar secretos aleatorios:
 

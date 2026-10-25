@@ -89,7 +89,23 @@ Editar `.env` y colocar valores aleatorios en:
 > `config/ejemplos.env` solo contiene marcadores de posicion. El
 > archivo `.env` real esta en `.gitignore` y **no** se versiona.
 
-### 4.3 Comprobar el demonio de Docker
+### 4.3 Usuario del personal (para los pasos 10 y siguientes del RF)
+
+En el despliegue el sembrado va apagado (`ENAO_SEED_ENABLED=false`), de modo que
+los pasos 10 y siguientes (`verificar-rf.sh`: revision de documentos, comprobante
+y reportes) necesitan un usuario de personal. Son dos formas validas:
+
+| Forma | Variables | Cuándo aplicar |
+|---|---|---|
+| Bootstrap del administrador (lo habitual) | `ADMIN_PASSWORD`, `ADMIN_USERNAME` | Si no hay usuarios y se necesita uno sin datos de ejemplo |
+| Sembrado con usuarios y postulante de ejemplo | `ENAO_SEED_ENABLED=true` y las tres contrasenas `ENAO_SEED_*` | Solo en un entorno de desarrollo o de laboratorio, porque crea usuarios con contrasenas de prueba |
+
+Verificalo con `/api/health`: **el campo `adminAccount` debe ser `CONFIGURED`**
+antes de correr los pasos del RF que dependen del administrador (y `MISSING`
+significa que falta definir `ADMIN_PASSWORD`, o que el sembrado esta apagado sin
+ningun usuario).
+
+### 4.4 Comprobar el demonio de Docker
 
 ```bash
 docker info --format '{{.ServerVersion}}'
