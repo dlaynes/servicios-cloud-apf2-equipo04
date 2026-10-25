@@ -54,6 +54,12 @@ volumes:
   db_data:
     name: apf2_db_data
 
+  # Documentos de la postulacion (RF-03): el backend corre como UID 10001,
+  # el Dockerfile ya crea /app/data con el chown del usuario y este volumen
+  # hace que los documentos sobrevivan a 'docker compose down' (sin -v).
+  backend_data:
+    name: apf2_backend_data
+
 services:
 
   # -------------------------------------------------------------------
@@ -106,6 +112,10 @@ services:
       SPRING_DATASOURCE_USERNAME: enao
       SPRING_DATASOURCE_PASSWORD: ${MYSQL_PASSWORD:?MYSQL_PASSWORD es obligatorio}
       SPRING_JPA_HIBERNATE_DDL_AUTO: update
+      # RF-03: ruta del almacenamiento de documentos dentro del contenedor
+      # (el Dockerfile la crea con el chown del UID 10001 y el volumen la
+      # vuelve persistente entre reinicios y entre 'docker compose down').
+      FILES_STORAGE_PATH: /app/data/documents
       ENAO_JWT_SECRET: ${JWT_SECRET:?JWT_SECRET es obligatorio}
       ENAO_JWT_EXPIRATION_MS: "86400000"
       # El navegador usa un unico origen (proxy inverso), por lo que CORS
@@ -119,6 +129,8 @@ services:
       ENAO_SEED_MAINTAINER_PASSWORD: ${ENAO_SEED_MAINTAINER_PASSWORD}
       ENAO_SEED_DEMO_PASSWORD: ${ENAO_SEED_DEMO_PASSWORD}      
       
+    volumes:
+      - backend_data:/app/data
     networks:
       - apf2_private
     healthcheck:

@@ -120,7 +120,40 @@ definir `ADMIN_PASSWORD` (o encender el sembrado con sus contrasenas) es lo que
 hace falta. Ese valor es un metadato tecnico, no un dato de negocio, y no expone
 credenciales.
 
-Generar secretos aleatorios:
+### Habilitar el sembrado temporalmente en el despliegue
+
+En una instalacion con la base de datos vacia el sembrado apagado no crea las
+cuentas de demostracion. El procedimiento para prepararlas de forma controlada
+es encenderlo, definir las contrasenas locales, verificar y volver a apagarlo
+(sin versionar esos valores: van en el `.env`):
+
+```bash
+# 1) en el .env, las contrasenas de los tres usuarios que se crearan
+ENAO_SEED_ENABLED=true
+ENAO_SEED_ADMIN_PASSWORD=<contrasena-aleatoria>
+ENAO_SEED_MAINTAINER_PASSWORD=<contrasena-aleatoria>
+ENAO_SEED_DEMO_PASSWORD=<contrasena-aleatoria>
+
+# 2) recrear el backend para que lea el .env nuevo
+docker compose -f docker/compose.yaml --env-file .env build backend
+docker compose -f docker/compose.yaml --env-file .env up -d
+
+# 3) comprobar que quedaron las cuentas y que el sembrado se reconoce
+curl -s http://localhost:8080/api/health
+docker compose -f docker/compose.yaml --env-file .env logs backend --tail 60
+
+# 4) volver a apagar el sembrado y recrear el backend
+#    (quita ENAO_SEED_ENABLED=true y las contrasenas del .env)
+docker compose -f docker/compose.yaml --env-file .env up -d
+curl -s http://localhost:8080/api/health
+```
+
+Desactivar el sembrado **no** elimina los usuarios ni los datos ya creados en
+MySQL: quedan disponibles para las siguientes corridas; y el sembrado de nuevo
+con `ENAO_SEED_ENABLED=true` en una base que ya tiene usuarios no los duplica
+porque el inicializador ya evita las inserciones repetidas.
+
+Generar secretos aleatorios:Generar secretos aleatorios:
 
 ```bash
 # Linux / macOS
